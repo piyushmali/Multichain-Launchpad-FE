@@ -1,7 +1,18 @@
 "use client"
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ethers, Contract } from 'ethers';
-import EVMLaunchpad from "@/contracts/EVMLaunchpad.json"
+import EVMLaunchpad from "@/contracts/EVMLaunchpad.json";
+import { SUPPORTED_CHAINS, DEFAULT_CHAIN_ID, switchChain } from '@/config/chains';
+import type { ContractABI } from '@/types/ethereum';
+
+declare global {
+  interface Window {
+    ethereum?: {
+      on(event: string, callback: (...args: unknown[]) => void): void;
+      removeListener(event: string, callback: (...args: unknown[]) => void): void;
+    };
+  }
+}
 
 // Define interfaces for state management
 interface FormState {
@@ -29,8 +40,10 @@ interface ComponentState {
   activeTab: 'register' | 'sale' | 'invest' | 'manage';
 }
 
-const EVMLaunchpadUI: React.FC = () => {
 
+const EVMLaunchpadUI: React.FC = () => {
+  // Add chain state
+  const [chainId, setChainId] = useState<number>(DEFAULT_CHAIN_ID);
   
   // Component state
   const [contract, setContract] = useState<ComponentState['contract']>(null);
@@ -53,31 +66,89 @@ const EVMLaunchpadUI: React.FC = () => {
   const [maxContribution, setMaxContribution] = useState<SaleRoundState['maxContribution']>('');
   const [startTime, setStartTime] = useState<SaleRoundState['startTime']>('');
   const [endTime, setEndTime] = useState<SaleRoundState['endTime']>('');
-  
+
+  useEffect(() => {
+    const handleChainChanged = (newChainId: string | number) => {
+      const chainIdNum = typeof newChainId === 'string' 
+        ? parseInt(newChainId, 16) 
+        : Number(newChainId);
+      
+      if (SUPPORTED_CHAINS[chainIdNum]) {
+        setChainId(chainIdNum);
+        initializeContract(chainIdNum);
+      }
+    };
+
+    if (window.ethereum) {
+      window.ethereum.on('chainChanged', handleChainChanged as (...args: unknown[]) => void);
+    }
+
+    return () => {
+      if (window.ethereum) {
+        window.ethereum.removeListener('chainChanged', handleChainChanged as (...args: unknown[]) => void);
+      }
+    };
+  }, []);
+
+
+  const initializeContract = async (chainIdNum: number): Promise<void> => {
+    if (!window.ethereum) return;
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const signer = provider.getSigner();
+    const chainConfig = SUPPORTED_CHAINS[chainIdNum];
+    
+    if (chainConfig) {
+      const contractABI = EVMLaunchpad as ContractABI;
+      const launchpadContract = new ethers.Contract(
+        chainConfig.contractAddress,
+        contractABI,
+        signer
+      );
+      setContract(launchpadContract);
+    }
+  };
+
   const connectWallet = async (): Promise<void> => {
     try {
       setLoading(true);
-      if (window.ethereum) {
-        const provider = new ethers.providers.Web3Provider(window.ethereum);
-        await provider.send('eth_requestAccounts', []);
-        const signer = provider.getSigner();
-        const address: string = await signer.getAddress();
-        setAccount(address);
-        
-        const contractAddress: string = "0x5B360Df3419F7A79E0F36cd8b7Dc45fC507DbD90";
-        const contractABI: any[] = [...EVMLaunchpad];
-        
-        const launchpadContract: Contract = new ethers.Contract(
-          contractAddress,
-          contractABI,
-          signer
-        );
-        setContract(launchpadContract);
-      } else {
+      if (!window.ethereum) {
         setError('Please install MetaMask');
+        return;
       }
-    } catch (err: any) {
-      setError(err.message);
+
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      await provider.send('eth_requestAccounts', []);
+      
+      // Get current chain ID
+      const network = await provider.getNetwork();
+      const currentChainId = network.chainId;
+      
+      // Switch to supported chain if needed
+      if (!SUPPORTED_CHAINS[currentChainId]) {
+        await switchChain(DEFAULT_CHAIN_ID);
+      }
+      
+      const signer = provider.getSigner();
+      const address = await signer.getAddress();
+      setAccount(address);
+      
+      await initializeContract(currentChainId);
+      setChainId(currentChainId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChainSwitch = async (newChainId: number) => {
+    try {
+      setLoading(true);
+      await switchChain(newChainId);
+      // Contract will be updated through the chainChanged event handler
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -183,27 +254,55 @@ const EVMLaunchpadUI: React.FC = () => {
     <div className="container mx-auto p-4">
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
         <h1 className="text-2xl font-bold mb-4">EVM Launchpad</h1>
-        {!account ? (
-          <button
-            onClick={connectWallet}
-            disabled={loading}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
-          >
-            Connect Wallet
-          </button>
-        ) : (
-          <p className="text-sm">Connected: {account}</p>
-        )}
         
-        {error && (
-          <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
-            {error}
-          </div>
-        )}
+        {/* Header Section with Network Selection and Wallet Connection */}
+        <div className="flex flex-col space-y-4">
+          {/* Network Selection */}
+          {account && (
+            <div className="flex items-center space-x-2">
+              <select
+                className="p-2 border rounded"
+                value={chainId}
+                onChange={(e) => handleChainSwitch(Number(e.target.value))}
+              >
+                {Object.entries(SUPPORTED_CHAINS).map(([id, chain]) => (
+                  <option key={id} value={id}>
+                    {chain.name}
+                  </option>
+                ))}
+              </select>
+              <span className="text-sm text-gray-600">
+                Current Network: {SUPPORTED_CHAINS[chainId]?.name}
+              </span>
+            </div>
+          )}
+  
+          {/* Wallet Connection */}
+          {!account ? (
+            <button
+              onClick={connectWallet}
+              disabled={loading}
+              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+            >
+              Connect Wallet
+            </button>
+          ) : (
+            <p className="text-sm">Connected: {account}</p>
+          )}
+          
+          {/* Error Display */}
+          {error && (
+            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
+              {error}
+            </div>
+          )}
+        </div>
       </div>
-
+  
+      {/* Main Content Section */}
       {account && (
         <div>
+          {/* Tab Navigation */}
           <div className="flex space-x-2 mb-4">
             <button
               onClick={() => setActiveTab('register')}
@@ -238,7 +337,8 @@ const EVMLaunchpadUI: React.FC = () => {
               Manage
             </button>
           </div>
-
+  
+          {/* Tab Content */}
           <div className="bg-white rounded-lg shadow-lg p-6">
             {activeTab === 'register' && (
               <div>
@@ -274,7 +374,7 @@ const EVMLaunchpadUI: React.FC = () => {
                 </form>
               </div>
             )}
-
+  
             {activeTab === 'sale' && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Create Sale Round</h2>
@@ -335,7 +435,7 @@ const EVMLaunchpadUI: React.FC = () => {
                 </form>
               </div>
             )}
-
+  
             {activeTab === 'invest' && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Purchase Tokens</h2>
@@ -363,7 +463,7 @@ const EVMLaunchpadUI: React.FC = () => {
                 </form>
               </div>
             )}
-
+  
             {activeTab === 'manage' && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Manage Investments</h2>
@@ -395,7 +495,6 @@ const EVMLaunchpadUI: React.FC = () => {
         </div>
       )}
     </div>
-  );
-};
+  );}
 
 export default EVMLaunchpadUI;
