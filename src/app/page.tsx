@@ -4,15 +4,23 @@ import { ethers, Contract } from 'ethers';
 import EVMLaunchpad from "@/contracts/EVMLaunchpad.json";
 import { SUPPORTED_CHAINS, DEFAULT_CHAIN_ID, switchChain } from '@/config/chains';
 import type { ContractABI } from '@/types/ethereum';
+import { EthereumProvider, EthereumEventMap } from '@/types/ethereum';
 
-declare global {
-  interface Window {
-    ethereum?: {
-      on(event: string, callback: (...args: unknown[]) => void): void;
-      removeListener(event: string, callback: (...args: unknown[]) => void): void;
-    };
-  }
-}
+// declare global {
+//   interface Window {
+//     ethereum?: {
+//       on(event: string, callback: (...args: unknown[]) => void): void;
+//       removeListener(event: string, callback: (...args: unknown[]) => void): void;
+//     };
+//   }
+// }
+
+// Update error handling types
+type EVMLaunchpadError = {
+  code?: number;
+  message: string;
+  data?: unknown;
+};
 
 // Define interfaces for state management
 interface FormState {
@@ -68,33 +76,47 @@ const EVMLaunchpadUI: React.FC = () => {
   const [endTime, setEndTime] = useState<SaleRoundState['endTime']>('');
 
   useEffect(() => {
-    const handleChainChanged = (newChainId: string | number) => {
-      const chainIdNum = typeof newChainId === 'string' 
-        ? parseInt(newChainId, 16) 
-        : Number(newChainId);
+    const handleChainChanged: EthereumEventMap['chainChanged'] = (chainId) => {
+      const chainIdNum = parseInt(chainId, 16);
       
       if (SUPPORTED_CHAINS[chainIdNum]) {
         setChainId(chainIdNum);
         initializeContract(chainIdNum);
       }
     };
-
-    if (window.ethereum) {
-      window.ethereum.on('chainChanged', handleChainChanged as (...args: unknown[]) => void);
+  
+    const ethereum = window.ethereum;
+    
+    if (ethereum?.on) {
+      ethereum.on('chainChanged', handleChainChanged);
     }
-
+  
     return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener('chainChanged', handleChainChanged as (...args: unknown[]) => void);
+      if (ethereum?.removeListener) {
+        ethereum.removeListener('chainChanged', handleChainChanged);
       }
     };
   }, []);
 
+  const handleError = (error: EVMLaunchpadError): string => {
+    if (error.code) {
+      switch (error.code) {
+        case 4001:
+          return 'Transaction rejected by user';
+        case -32603:
+          return 'Internal JSON-RPC error';
+        default:
+          return error.message || 'An unknown error occurred';
+      }
+    }
+    return error.message || 'An unknown error occurred';
+  };
 
   const initializeContract = async (chainIdNum: number): Promise<void> => {
-    if (!window.ethereum) return;
+    const ethereum = window.ethereum as EthereumProvider | undefined;
+    if (!ethereum) return;
 
-    const provider = new ethers.providers.Web3Provider(window.ethereum);
+    const provider = new ethers.providers.Web3Provider(ethereum);
     const signer = provider.getSigner();
     const chainConfig = SUPPORTED_CHAINS[chainIdNum];
     
@@ -167,8 +189,8 @@ const EVMLaunchpadUI: React.FC = () => {
       );
       await tx.wait();
       setError('Token registered successfully!');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
     } finally {
       setLoading(false);
     }
@@ -194,8 +216,8 @@ const EVMLaunchpadUI: React.FC = () => {
       );
       await tx.wait();
       setError('Sale round added successfully!');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
     } finally {
       setLoading(false);
     }
@@ -213,8 +235,8 @@ const EVMLaunchpadUI: React.FC = () => {
       );
       await tx.wait();
       setError('Tokens purchased successfully!');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
     } finally {
       setLoading(false);
     }
@@ -228,8 +250,8 @@ const EVMLaunchpadUI: React.FC = () => {
       const tx = await contract.claimTokens(selectedToken);
       await tx.wait();
       setError('Tokens claimed successfully!');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
     } finally {
       setLoading(false);
     }
@@ -243,8 +265,8 @@ const EVMLaunchpadUI: React.FC = () => {
       const tx = await contract.withdrawFunds();
       await tx.wait();
       setError('Funds withdrawn successfully!');
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
     } finally {
       setLoading(false);
     }

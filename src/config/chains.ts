@@ -1,4 +1,4 @@
-import { ChainConfig } from '@/types/ethereum';
+import { ChainConfig, EthereumProvider } from '@/types/ethereum';
 
 export const SUPPORTED_CHAINS: { [key: number]: ChainConfig } = {
   // Holesky Testnet
@@ -32,18 +32,19 @@ export const DEFAULT_CHAIN_ID = 17000;
 export async function switchChain(chainId: number): Promise<void> {
   const chain = SUPPORTED_CHAINS[chainId];
   if (!chain) throw new Error('Unsupported chain');
-  
-  if (!window.ethereum) throw new Error('No ethereum provider found');
+
+  const ethereum = window.ethereum as EthereumProvider | undefined;
+  if (!ethereum) throw new Error('No ethereum provider found');
 
   try {
-    await window.ethereum.request({
+    await ethereum.request({
       method: 'wallet_switchEthereumChain',
       params: [{ chainId: `0x${chainId.toString(16)}` }],
     });
   } catch (error: unknown) {
     const switchError = error as { code: number };
     if (switchError.code === 4902) {
-      await window.ethereum.request({
+      await ethereum.request({
         method: 'wallet_addEthereumChain',
         params: [
           {
