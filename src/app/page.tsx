@@ -5,6 +5,7 @@ import EVMLaunchpad from "@/contracts/EVMLaunchpad.json";
 import { SUPPORTED_CHAINS, DEFAULT_CHAIN_ID, switchChain } from '@/config/chains';
 import type { ContractABI } from '@/types/ethereum';
 import { EthereumProvider, EthereumEventMap } from '@/types/ethereum';
+import ERC20_ABI from "@/contracts/ERC20_ABI.json"; // Add this import for ERC20 ABI
 
 // declare global {
 //   interface Window {
@@ -176,6 +177,31 @@ const EVMLaunchpadUI: React.FC = () => {
     }
   };
 
+  const setupTokenTransfer = async (tokenAddress: string, amount: string): Promise<void> => {
+    try {
+      setLoading(true);
+      if (!window.ethereum) throw new Error('MetaMask not installed');
+      
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const tokenContract = new ethers.Contract(tokenAddress, ERC20_ABI, signer);
+  
+      // Approve tokens for the launchpad contract
+      const txApprove = await tokenContract.approve(contract?.address, ethers.utils.parseEther(amount));
+      await txApprove.wait();
+  
+      // Transfer tokens to the launchpad contract
+      const txTransfer = await tokenContract.transfer(contract?.address, ethers.utils.parseEther(amount));
+      await txTransfer.wait();
+  
+      setError('Token transfer setup completed!');
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const registerToken = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     try {
@@ -223,6 +249,21 @@ const EVMLaunchpadUI: React.FC = () => {
     }
   };
 
+  const activateSaleRound = async (tokenAddress: string, roundIndex: number): Promise<void> => {
+    try {
+      setLoading(true);
+      if (!contract) throw new Error('Contract not initialized');
+      
+      const tx = await contract.activateSaleRound(tokenAddress, roundIndex);
+      await tx.wait();
+      setError('Sale round activated successfully!');
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const purchaseTokens = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     try {
@@ -250,6 +291,21 @@ const EVMLaunchpadUI: React.FC = () => {
       const tx = await contract.claimTokens(selectedToken);
       await tx.wait();
       setError('Tokens claimed successfully!');
+    } catch (err) {
+      setError(handleError(err as EVMLaunchpadError));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const checkVestingSchedule = async (investorAddress: string, tokenAddress: string): Promise<void> => {
+    try {
+      setLoading(true);
+      if (!contract) throw new Error('Contract not initialized');
+      
+      const vestingSchedule = await contract.vestingSchedules(investorAddress, tokenAddress);
+      console.log('Vesting Schedule:', vestingSchedule);
+      setError('Vesting schedule fetched successfully!');
     } catch (err) {
       setError(handleError(err as EVMLaunchpadError));
     } finally {
@@ -396,6 +452,33 @@ const EVMLaunchpadUI: React.FC = () => {
                 </form>
               </div>
             )}
+
+{activeTab === 'register' && (
+  <div className="mt-6">
+    <h2 className="text-xl font-bold mb-4">Token Transfer Setup</h2>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        setupTokenTransfer(tokenAddress, '10000'); // Adjust the amount as needed
+      }}
+      className="space-y-4"
+    >
+      <input
+        className="w-full p-2 border rounded"
+        placeholder="Token Address"
+        value={tokenAddress}
+        onChange={(e) => setTokenAddress(e.target.value)}
+      />
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+      >
+        Setup Token Transfer
+      </button>
+    </form>
+  </div>
+)}
   
             {activeTab === 'sale' && (
               <div>
@@ -457,6 +540,33 @@ const EVMLaunchpadUI: React.FC = () => {
                 </form>
               </div>
             )}
+
+{activeTab === 'sale' && (
+  <div className="mt-6">
+    <h2 className="text-xl font-bold mb-4">Activate Sale Round</h2>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        activateSaleRound(selectedToken, 0); // Adjust the roundIndex as needed
+      }}
+      className="space-y-4"
+    >
+      <input
+        className="w-full p-2 border rounded"
+        placeholder="Token Address"
+        value={selectedToken}
+        onChange={(e) => setSelectedToken(e.target.value)}
+      />
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+      >
+        Activate Sale Round
+      </button>
+    </form>
+  </div>
+)}
   
             {activeTab === 'invest' && (
               <div>
@@ -513,6 +623,32 @@ const EVMLaunchpadUI: React.FC = () => {
                 </div>
               </div>
             )}
+            {activeTab === 'manage' && (
+  <div className="mt-6">
+    <h2 className="text-xl font-bold mb-4">Check Vesting Schedule</h2>
+    <form
+      onSubmit={(e) => {
+        e.preventDefault();
+        checkVestingSchedule(account, selectedToken);
+      }}
+      className="space-y-4"
+    >
+      <input
+        className="w-full p-2 border rounded"
+        placeholder="Token Address"
+        value={selectedToken}
+        onChange={(e) => setSelectedToken(e.target.value)}
+      />
+      <button
+        type="submit"
+        disabled={loading}
+        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+      >
+        Check Vesting Schedule
+      </button>
+    </form>
+  </div>
+)}
           </div>
         </div>
       )}
