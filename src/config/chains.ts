@@ -6,7 +6,7 @@ export const SUPPORTED_CHAINS: { [key: number]: ChainConfig } = {
     chainId: 17000,
     name: 'Holesky',
     rpcUrl: 'https://ethereum-holesky.publicnode.com',
-    contractAddress: '0x5B360Df3419F7A79e0F36cd8b7Dc45fC507DbD90',
+    contractAddress: '0x961Bdef6E514dDEA530B3B2390ab2566076b6376',
     symbol: 'ETH'
   },
   // Polygon Amoy Testnet
@@ -14,7 +14,7 @@ export const SUPPORTED_CHAINS: { [key: number]: ChainConfig } = {
     chainId: 80001,
     name: 'Polygon Amoy',
     rpcUrl: 'https://rpc-amoy.polygon.technology',
-    contractAddress: 'YOUR_POLYGON_CONTRACT_ADDRESS',
+    contractAddress: '0xAC7506a85bA1C7D8F8f2F654e395BfAc454790c1',
     symbol: 'MATIC'
   },
   // BSC Testnet
@@ -22,7 +22,7 @@ export const SUPPORTED_CHAINS: { [key: number]: ChainConfig } = {
     chainId: 97,
     name: 'BSC Testnet',
     rpcUrl: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-    contractAddress: 'YOUR_BSC_CONTRACT_ADDRESS',
+    contractAddress: '0x82a06C3dfFc8B6f8b90684963926D62398168205',
     symbol: 'tBNB'
   }
 };
