@@ -328,17 +328,22 @@ const EVMLaunchpadUI: React.FC = () => {
   };
 
   return (
-    <div className="container mx-auto p-4">
-      <div className="bg-[#404045] rounded-lg shadow-lg p-6 mb-6 border border-[#5a5a69]">
-        <h1 className="text-2xl font-bold mb-4 text-[#509fff]">Zero Launchpad</h1>
-        
-        {/* Header Section with Network Selection and Wallet Connection */}
-        <div className="flex flex-col space-y-4">
-          {/* Network Selection */}
-          {account && (
-            <div className="flex items-center space-x-2">
+    <div className="container mx-auto p-4 space-y-6">
+      {/* Header Card */}
+      <div className="card p-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-1">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-accent to-blue-400 bg-clip-text text-transparent">
+              Zero Launchpad
+            </h1>
+            <p className="text-slate-400">Launch your tokens across multiple chains</p>
+          </div>
+          
+          {/* Network Selection & Wallet Connection */}
+          <div className="flex items-center gap-4">
+            {account && (
               <select
-                className="p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff]"
+                className="input max-w-[200px]"
                 value={chainId}
                 onChange={(e) => handleChainSwitch(Number(e.target.value))}
               >
@@ -348,102 +353,71 @@ const EVMLaunchpadUI: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <span className="text-sm text-[#509fff]">
-                Current Network: {SUPPORTED_CHAINS[chainId]?.name}
-              </span>
-            </div>
-          )}
-  
-          {/* Wallet Connection/Disconnection */}
-          {!account ? (
-            <button
-              onClick={connectWallet}
-              disabled={loading}
-              className="bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
-            >
-              Connect Wallet
-            </button>
-          ) : (
-            <div className="flex items-center space-x-4">
-              <p className="text-sm text-[#509fff]">Connected: {account}</p>
-              <button
-                onClick={disconnectWallet}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:opacity-90"
-              >
-                Disconnect
+            )}
+            
+            {!account ? (
+              <button onClick={connectWallet} disabled={loading} className="button-primary">
+                Connect Wallet
               </button>
-            </div>
-          )}
-          
-          {/* Error Display */}
-          {error && (
-            <div className="mt-4 p-4 bg-red-100/10 text-red-400 rounded border border-red-400">
-              {error}
-            </div>
-          )}
-        </div>
-      </div>
-  
-      {/* Main Content Section */}
-      {account && (
-        <div>
-          {/* Tab Navigation */}
-          <div className="flex space-x-2 mb-4">
-            <button
-              onClick={() => setActiveTab('register')}
-              className={`px-4 py-2 rounded border border-[#5a5a69] ${
-                activeTab === 'register' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
-              }`}
-            >
-              Register Token
-            </button>
-            <button
-              onClick={() => setActiveTab('sale')}
-              className={`px-4 py-2 rounded border border-[#5a5a69] ${
-                activeTab === 'sale' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
-              }`}
-            >
-              Sale Rounds
-            </button>
-            <button
-              onClick={() => setActiveTab('invest')}
-              className={`px-4 py-2 rounded border border-[#5a5a69] ${
-                activeTab === 'invest' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
-              }`}
-            >
-              Invest
-            </button>
-            <button
-              onClick={() => setActiveTab('manage')}
-              className={`px-4 py-2 rounded border border-[#5a5a69] ${
-                activeTab === 'manage' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
-              }`}
-            >
-              Manage
-            </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-slate-700/50 text-sm">
+                  {account.slice(0, 6)}...{account.slice(-4)}
+                </span>
+                <button onClick={disconnectWallet} className="button-secondary">
+                  Disconnect
+                </button>
+              </div>
+            )}
           </div>
-  
+        </div>
+        
+        {/* Error Display */}
+        {error && (
+          <div className="mt-4 p-4 bg-red-500/10 border border-red-500/20 rounded-lg text-red-400">
+            {error}
+          </div>
+        )}
+      </div>
+
+      {/* Main Content */}
+      {account && (
+        <div className="space-y-6">
+          {/* Tabs */}
+          <div className="flex gap-2 p-1 bg-slate-800/50 rounded-lg w-fit">
+            {['register', 'sale', 'invest', 'manage'].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => setActiveTab(tab as ComponentState['activeTab'])}
+                className="tab"
+                data-active={activeTab === tab}
+              >
+                {tab.charAt(0).toUpperCase() + tab.slice(1)}
+              </button>
+            ))}
+          </div>
+
           {/* Tab Content */}
-          <div className="bg-[#404045] rounded-lg shadow-lg p-6 border border-[#5a5a69]">
+          <div className="card p-6">
             {activeTab === 'register' && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Register New Token</h2>
                 <form onSubmit={registerToken} className="space-y-4">
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Token Address"
                     value={tokenAddress}
                     onChange={(e) => setTokenAddress(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Soft Cap (ETH)"
                     type="number"
                     value={softCap}
                     onChange={(e) => setSoftCap(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Hard Cap (ETH)"
                     type="number"
                     value={hardCap}
@@ -452,7 +426,7 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
+                    className="button-primary"
                   >
                     Register Token
                   </button>
@@ -460,79 +434,79 @@ const EVMLaunchpadUI: React.FC = () => {
               </div>
             )}
 
-{activeTab === 'register' && (
-  <div className="mt-6">
-    <h2 className="text-xl font-bold mb-4">Token Transfer Setup</h2>
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        setupTokenTransfer(tokenAddress, '10000'); // Adjust the amount as needed
-      }}
-      className="space-y-4"
-    >
-      <input
-        className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
-        placeholder="Token Address"
-        value={tokenAddress}
-        onChange={(e) => setTokenAddress(e.target.value)}
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
-      >
-        Setup Token Transfer
-      </button>
-    </form>
-  </div>
-)}
-  
+            {activeTab === 'register' && (
+              <div className="mt-6">
+                <h2 className="text-xl font-bold mb-4">Token Transfer Setup</h2>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    setupTokenTransfer(tokenAddress, '10000'); // Adjust the amount as needed
+                  }}
+                  className="space-y-4"
+                >
+                  <input
+                    className="input"
+                    placeholder="Token Address"
+                    value={tokenAddress}
+                    onChange={(e) => setTokenAddress(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="button-primary"
+                  >
+                    Setup Token Transfer
+                  </button>
+                </form>
+              </div>
+            )}
+            
             {activeTab === 'sale' && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Create Sale Round</h2>
                 <form onSubmit={addSaleRound} className="space-y-4">
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Token Address"
                     value={selectedToken}
                     onChange={(e) => setSelectedToken(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Price Per Token (ETH)"
                     type="number"
                     value={pricePerToken}
                     onChange={(e) => setPricePerToken(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Tokens Available"
                     type="number"
                     value={tokensAvailable}
                     onChange={(e) => setTokensAvailable(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Min Contribution (ETH)"
                     type="number"
                     value={minContribution}
                     onChange={(e) => setMinContribution(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Max Contribution (ETH)"
                     type="number"
                     value={maxContribution}
                     onChange={(e) => setMaxContribution(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     type="datetime-local"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     type="datetime-local"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
@@ -540,7 +514,7 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
+                    className="button-primary"
                   >
                     Create Sale Round
                   </button>
@@ -548,45 +522,45 @@ const EVMLaunchpadUI: React.FC = () => {
               </div>
             )}
 
-{activeTab === 'sale' && (
-  <div className="mt-6">
-    <h2 className="text-xl font-bold mb-4">Activate Sale Round</h2>
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        activateSaleRound(selectedToken, 0); // Adjust the roundIndex as needed
-      }}
-      className="space-y-4"
-    >
-      <input
-        className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
-        placeholder="Token Address"
-        value={selectedToken}
-        onChange={(e) => setSelectedToken(e.target.value)}
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
-      >
-        Activate Sale Round
-      </button>
-    </form>
-  </div>
-)}
-  
+            {activeTab === 'sale' && (
+              <div className="mt-6">
+                <h2 className="text-xl font-bold mb-4">Activate Sale Round</h2>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    activateSaleRound(selectedToken, 0); // Adjust the roundIndex as needed
+                  }}
+                  className="space-y-4"
+                >
+                  <input
+                    className="input"
+                    placeholder="Token Address"
+                    value={selectedToken}
+                    onChange={(e) => setSelectedToken(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="button-primary"
+                  >
+                    Activate Sale Round
+                  </button>
+                </form>
+              </div>
+            )}
+            
             {activeTab === 'invest' && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Purchase Tokens</h2>
                 <form onSubmit={purchaseTokens} className="space-y-4">
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Token Address"
                     value={selectedToken}
                     onChange={(e) => setSelectedToken(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Amount (ETH)"
                     type="number"
                     value={purchaseAmount}
@@ -595,7 +569,7 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
+                    className="button-primary"
                   >
                     Purchase Tokens
                   </button>
@@ -608,7 +582,7 @@ const EVMLaunchpadUI: React.FC = () => {
                 <h2 className="text-xl font-bold mb-4">Manage Investments</h2>
                 <div className="space-y-4">
                   <input
-                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
+                    className="input"
                     placeholder="Token Address"
                     value={selectedToken}
                     onChange={(e) => setSelectedToken(e.target.value)}
@@ -616,14 +590,14 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     onClick={claimTokens}
                     disabled={loading}
-                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
+                    className="button-primary"
                   >
                     Claim Tokens
                   </button>
                   <button
                     onClick={withdrawFunds}
                     disabled={loading}
-                    className="w-full bg-[#404045] text-[#509fff] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
+                    className="button-secondary"
                   >
                     Withdraw Funds
                   </button>
@@ -631,35 +605,36 @@ const EVMLaunchpadUI: React.FC = () => {
               </div>
             )}
             {activeTab === 'manage' && (
-  <div className="mt-6">
-    <h2 className="text-xl font-bold mb-4">Check Vesting Schedule</h2>
-    <form
-      onSubmit={(e) => {
-        e.preventDefault();
-        checkVestingSchedule(account, selectedToken);
-      }}
-      className="space-y-4"
-    >
-      <input
-        className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
-        placeholder="Token Address"
-        value={selectedToken}
-        onChange={(e) => setSelectedToken(e.target.value)}
-      />
-      <button
-        type="submit"
-        disabled={loading}
-        className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
-      >
-        Check Vesting Schedule
-      </button>
-    </form>
-  </div>
-)}
+              <div className="mt-6">
+                <h2 className="text-xl font-bold mb-4">Check Vesting Schedule</h2>
+                <form
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    checkVestingSchedule(account, selectedToken);
+                  }}
+                  className="space-y-4"
+                >
+                  <input
+                    className="input"
+                    placeholder="Token Address"
+                    value={selectedToken}
+                    onChange={(e) => setSelectedToken(e.target.value)}
+                  />
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="button-primary"
+                  >
+                    Check Vesting Schedule
+                  </button>
+                </form>
+              </div>
+            )}
           </div>
         </div>
       )}
     </div>
-  );}
+  );
+};
 
 export default EVMLaunchpadUI;
