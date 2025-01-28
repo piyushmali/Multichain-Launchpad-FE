@@ -10,10 +10,11 @@ export const SUPPORTED_CHAINS: { [key: number]: ChainConfig } = {
     symbol: 'ETH'
   },
   // Polygon Amoy Testnet
-  80001: {
-    chainId: 80001,
+  80002: {
+    chainId: 80002, 
     name: 'Polygon Amoy',
-    rpcUrl: 'https://rpc-amoy.polygon.technology',
+    rpcUrl: 'https://rpc-amoy.polygon.technology', //https://rpc-amoy.polygon.technology
+
     contractAddress: '0xAC7506a85bA1C7D8F8f2F654e395BfAc454790c1',
     symbol: 'MATIC'
   },
