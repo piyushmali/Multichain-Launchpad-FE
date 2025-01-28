@@ -275,7 +275,7 @@ const EVMLaunchpadUI: React.FC = () => {
   return (
     <div className="container mx-auto p-4">
       <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold mb-4">EVM Launchpad</h1>
+        <h1 className="text-2xl font-bold mb-4">Zero Launchpad</h1>
         
         {/* Header Section with Network Selection and Wallet Connection */}
         <div className="flex flex-col space-y-4">
