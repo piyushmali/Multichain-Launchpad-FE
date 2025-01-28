@@ -7,14 +7,6 @@ import type { ContractABI } from '@/types/ethereum';
 import { EthereumProvider, EthereumEventMap } from '@/types/ethereum';
 import ERC20_ABI from "@/contracts/ERC20_ABI.json"; // Add this import for ERC20 ABI
 
-// declare global {
-//   interface Window {
-//     ethereum?: {
-//       on(event: string, callback: (...args: unknown[]) => void): void;
-//       removeListener(event: string, callback: (...args: unknown[]) => void): void;
-//     };
-//   }
-// }
 
 // Update error handling types
 type EVMLaunchpadError = {
@@ -328,10 +320,17 @@ const EVMLaunchpadUI: React.FC = () => {
     }
   };
 
+  const disconnectWallet = (): void => {
+    setAccount('');
+    setContract(null);
+    setError('');
+    // Reset other relevant state if needed
+  };
+
   return (
     <div className="container mx-auto p-4">
-      <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-        <h1 className="text-2xl font-bold mb-4">Zero Launchpad</h1>
+      <div className="bg-[#404045] rounded-lg shadow-lg p-6 mb-6 border border-[#5a5a69]">
+        <h1 className="text-2xl font-bold mb-4 text-[#509fff]">Zero Launchpad</h1>
         
         {/* Header Section with Network Selection and Wallet Connection */}
         <div className="flex flex-col space-y-4">
@@ -339,7 +338,7 @@ const EVMLaunchpadUI: React.FC = () => {
           {account && (
             <div className="flex items-center space-x-2">
               <select
-                className="p-2 border rounded"
+                className="p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff]"
                 value={chainId}
                 onChange={(e) => handleChainSwitch(Number(e.target.value))}
               >
@@ -349,28 +348,36 @@ const EVMLaunchpadUI: React.FC = () => {
                   </option>
                 ))}
               </select>
-              <span className="text-sm text-gray-600">
+              <span className="text-sm text-[#509fff]">
                 Current Network: {SUPPORTED_CHAINS[chainId]?.name}
               </span>
             </div>
           )}
   
-          {/* Wallet Connection */}
+          {/* Wallet Connection/Disconnection */}
           {!account ? (
             <button
               onClick={connectWallet}
               disabled={loading}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+              className="bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
             >
               Connect Wallet
             </button>
           ) : (
-            <p className="text-sm">Connected: {account}</p>
+            <div className="flex items-center space-x-4">
+              <p className="text-sm text-[#509fff]">Connected: {account}</p>
+              <button
+                onClick={disconnectWallet}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:opacity-90"
+              >
+                Disconnect
+              </button>
+            </div>
           )}
           
           {/* Error Display */}
           {error && (
-            <div className="mt-4 p-4 bg-red-100 text-red-700 rounded">
+            <div className="mt-4 p-4 bg-red-100/10 text-red-400 rounded border border-red-400">
               {error}
             </div>
           )}
@@ -384,32 +391,32 @@ const EVMLaunchpadUI: React.FC = () => {
           <div className="flex space-x-2 mb-4">
             <button
               onClick={() => setActiveTab('register')}
-              className={`px-4 py-2 rounded ${
-                activeTab === 'register' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+              className={`px-4 py-2 rounded border border-[#5a5a69] ${
+                activeTab === 'register' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
               }`}
             >
               Register Token
             </button>
             <button
               onClick={() => setActiveTab('sale')}
-              className={`px-4 py-2 rounded ${
-                activeTab === 'sale' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+              className={`px-4 py-2 rounded border border-[#5a5a69] ${
+                activeTab === 'sale' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
               }`}
             >
               Sale Rounds
             </button>
             <button
               onClick={() => setActiveTab('invest')}
-              className={`px-4 py-2 rounded ${
-                activeTab === 'invest' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+              className={`px-4 py-2 rounded border border-[#5a5a69] ${
+                activeTab === 'invest' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
               }`}
             >
               Invest
             </button>
             <button
               onClick={() => setActiveTab('manage')}
-              className={`px-4 py-2 rounded ${
-                activeTab === 'manage' ? 'bg-blue-500 text-white' : 'bg-gray-200'
+              className={`px-4 py-2 rounded border border-[#5a5a69] ${
+                activeTab === 'manage' ? 'bg-[#509fff] text-[#404045]' : 'bg-[#404045] text-[#509fff]'
               }`}
             >
               Manage
@@ -417,26 +424,26 @@ const EVMLaunchpadUI: React.FC = () => {
           </div>
   
           {/* Tab Content */}
-          <div className="bg-white rounded-lg shadow-lg p-6">
+          <div className="bg-[#404045] rounded-lg shadow-lg p-6 border border-[#5a5a69]">
             {activeTab === 'register' && (
               <div>
                 <h2 className="text-xl font-bold mb-4">Register New Token</h2>
                 <form onSubmit={registerToken} className="space-y-4">
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Token Address"
                     value={tokenAddress}
                     onChange={(e) => setTokenAddress(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Soft Cap (ETH)"
                     type="number"
                     value={softCap}
                     onChange={(e) => setSoftCap(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Hard Cap (ETH)"
                     type="number"
                     value={hardCap}
@@ -445,7 +452,7 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
                   >
                     Register Token
                   </button>
@@ -464,7 +471,7 @@ const EVMLaunchpadUI: React.FC = () => {
       className="space-y-4"
     >
       <input
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
         placeholder="Token Address"
         value={tokenAddress}
         onChange={(e) => setTokenAddress(e.target.value)}
@@ -472,7 +479,7 @@ const EVMLaunchpadUI: React.FC = () => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+        className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
       >
         Setup Token Transfer
       </button>
@@ -485,47 +492,47 @@ const EVMLaunchpadUI: React.FC = () => {
                 <h2 className="text-xl font-bold mb-4">Create Sale Round</h2>
                 <form onSubmit={addSaleRound} className="space-y-4">
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Token Address"
                     value={selectedToken}
                     onChange={(e) => setSelectedToken(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Price Per Token (ETH)"
                     type="number"
                     value={pricePerToken}
                     onChange={(e) => setPricePerToken(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Tokens Available"
                     type="number"
                     value={tokensAvailable}
                     onChange={(e) => setTokensAvailable(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Min Contribution (ETH)"
                     type="number"
                     value={minContribution}
                     onChange={(e) => setMinContribution(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Max Contribution (ETH)"
                     type="number"
                     value={maxContribution}
                     onChange={(e) => setMaxContribution(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     type="datetime-local"
                     value={startTime}
                     onChange={(e) => setStartTime(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     type="datetime-local"
                     value={endTime}
                     onChange={(e) => setEndTime(e.target.value)}
@@ -533,7 +540,7 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
                   >
                     Create Sale Round
                   </button>
@@ -552,7 +559,7 @@ const EVMLaunchpadUI: React.FC = () => {
       className="space-y-4"
     >
       <input
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
         placeholder="Token Address"
         value={selectedToken}
         onChange={(e) => setSelectedToken(e.target.value)}
@@ -560,7 +567,7 @@ const EVMLaunchpadUI: React.FC = () => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+        className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
       >
         Activate Sale Round
       </button>
@@ -573,13 +580,13 @@ const EVMLaunchpadUI: React.FC = () => {
                 <h2 className="text-xl font-bold mb-4">Purchase Tokens</h2>
                 <form onSubmit={purchaseTokens} className="space-y-4">
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Token Address"
                     value={selectedToken}
                     onChange={(e) => setSelectedToken(e.target.value)}
                   />
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Amount (ETH)"
                     type="number"
                     value={purchaseAmount}
@@ -588,7 +595,7 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
                   >
                     Purchase Tokens
                   </button>
@@ -601,7 +608,7 @@ const EVMLaunchpadUI: React.FC = () => {
                 <h2 className="text-xl font-bold mb-4">Manage Investments</h2>
                 <div className="space-y-4">
                   <input
-                    className="w-full p-2 border rounded"
+                    className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
                     placeholder="Token Address"
                     value={selectedToken}
                     onChange={(e) => setSelectedToken(e.target.value)}
@@ -609,14 +616,14 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     onClick={claimTokens}
                     disabled={loading}
-                    className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+                    className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
                   >
                     Claim Tokens
                   </button>
                   <button
                     onClick={withdrawFunds}
                     disabled={loading}
-                    className="w-full bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:opacity-50"
+                    className="w-full bg-[#404045] text-[#509fff] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
                   >
                     Withdraw Funds
                   </button>
@@ -634,7 +641,7 @@ const EVMLaunchpadUI: React.FC = () => {
       className="space-y-4"
     >
       <input
-        className="w-full p-2 border rounded"
+        className="w-full p-2 border border-[#5a5a69] rounded bg-[#404045] text-[#509fff] placeholder-[#509fff]/50"
         placeholder="Token Address"
         value={selectedToken}
         onChange={(e) => setSelectedToken(e.target.value)}
@@ -642,7 +649,7 @@ const EVMLaunchpadUI: React.FC = () => {
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 disabled:opacity-50"
+        className="w-full bg-[#509fff] text-[#404045] px-4 py-2 rounded hover:opacity-90 disabled:opacity-50"
       >
         Check Vesting Schedule
       </button>
