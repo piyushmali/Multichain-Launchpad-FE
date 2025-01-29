@@ -426,38 +426,33 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="button-primary"
+                    className="button-primary w-full"
                   >
                     Register Token
                   </button>
                 </form>
-              </div>
-            )}
 
-            {activeTab === 'register' && (
-              <div className="mt-6">
-                <h2 className="text-xl font-bold mb-4">Token Transfer Setup</h2>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    setupTokenTransfer(tokenAddress, '10000'); // Adjust the amount as needed
-                  }}
-                  className="space-y-4"
-                >
-                  <input
-                    className="input"
-                    placeholder="Token Address"
-                    value={tokenAddress}
-                    onChange={(e) => setTokenAddress(e.target.value)}
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="button-primary"
-                  >
-                    Setup Token Transfer
-                  </button>
-                </form>
+                <div className="mt-6 border-t border-slate-700/50 pt-6">
+                  <h2 className="text-xl font-bold mb-4">Token Transfer Setup</h2>
+                  <div className="space-y-4">
+                    <input
+                      className="input"
+                      placeholder="Token Address"
+                      value={tokenAddress}
+                      onChange={(e) => setTokenAddress(e.target.value)}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        setupTokenTransfer(tokenAddress, '10000');
+                      }}
+                      disabled={loading}
+                      className="button-primary w-full"
+                    >
+                      Setup Token Transfer
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
             
@@ -514,38 +509,33 @@ const EVMLaunchpadUI: React.FC = () => {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="button-primary"
+                    className="button-primary w-full"
                   >
                     Create Sale Round
                   </button>
                 </form>
-              </div>
-            )}
 
-            {activeTab === 'sale' && (
-              <div className="mt-6">
-                <h2 className="text-xl font-bold mb-4">Activate Sale Round</h2>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    activateSaleRound(selectedToken, 0); // Adjust the roundIndex as needed
-                  }}
-                  className="space-y-4"
-                >
-                  <input
-                    className="input"
-                    placeholder="Token Address"
-                    value={selectedToken}
-                    onChange={(e) => setSelectedToken(e.target.value)}
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="button-primary"
-                  >
-                    Activate Sale Round
-                  </button>
-                </form>
+                <div className="mt-6 border-t border-slate-700/50 pt-6">
+                  <h2 className="text-xl font-bold mb-4">Activate Sale Round</h2>
+                  <div className="space-y-4">
+                    <input
+                      className="input"
+                      placeholder="Token Address"
+                      value={selectedToken}
+                      onChange={(e) => setSelectedToken(e.target.value)}
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        activateSaleRound(selectedToken, 0);
+                      }}
+                      disabled={loading}
+                      className="button-primary w-full"
+                    >
+                      Activate Sale Round
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
             
@@ -587,47 +577,45 @@ const EVMLaunchpadUI: React.FC = () => {
                     value={selectedToken}
                     onChange={(e) => setSelectedToken(e.target.value)}
                   />
-                  <button
-                    onClick={claimTokens}
-                    disabled={loading}
-                    className="button-primary"
-                  >
-                    Claim Tokens
-                  </button>
-                  <button
-                    onClick={withdrawFunds}
-                    disabled={loading}
-                    className="button-secondary"
-                  >
-                    Withdraw Funds
-                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      type="button"
+                      onClick={() => claimTokens()}
+                      disabled={loading}
+                      className="button-primary flex-1"
+                    >
+                      Claim Tokens
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => withdrawFunds()}
+                      disabled={loading}
+                      className="button-secondary flex-1"
+                    >
+                      Withdraw Funds
+                    </button>
+                  </div>
                 </div>
-              </div>
-            )}
-            {activeTab === 'manage' && (
-              <div className="mt-6">
-                <h2 className="text-xl font-bold mb-4">Check Vesting Schedule</h2>
-                <form
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    checkVestingSchedule(account, selectedToken);
-                  }}
-                  className="space-y-4"
-                >
-                  <input
-                    className="input"
-                    placeholder="Token Address"
-                    value={selectedToken}
-                    onChange={(e) => setSelectedToken(e.target.value)}
-                  />
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="button-primary"
-                  >
-                    Check Vesting Schedule
-                  </button>
-                </form>
+
+                <div className="mt-6 border-t border-slate-700/50 pt-6">
+                  <h2 className="text-xl font-bold mb-4">Check Vesting Schedule</h2>
+                  <div className="space-y-4">
+                    <input
+                      className="input"
+                      placeholder="Token Address"
+                      value={selectedToken}
+                      onChange={(e) => setSelectedToken(e.target.value)}
+                    />
+                    <button
+                      type="button"
+                      onClick={() => checkVestingSchedule(account, selectedToken)}
+                      disabled={loading}
+                      className="button-primary w-full"
+                    >
+                      Check Vesting Schedule
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
           </div>
