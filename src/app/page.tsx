@@ -41,6 +41,13 @@ interface ComponentState {
   activeTab: 'register' | 'sale' | 'invest' | 'manage';
 }
 
+// Add this interface for vesting schedule data
+interface VestingSchedule {
+  totalAllocation: ethers.BigNumber;
+  released: ethers.BigNumber;
+  start: ethers.BigNumber;
+  duration: ethers.BigNumber;
+}
 
 const EVMLaunchpadUI: React.FC = () => {
   // Add chain state
@@ -67,6 +74,9 @@ const EVMLaunchpadUI: React.FC = () => {
   const [maxContribution, setMaxContribution] = useState<SaleRoundState['maxContribution']>('');
   const [startTime, setStartTime] = useState<SaleRoundState['startTime']>('');
   const [endTime, setEndTime] = useState<SaleRoundState['endTime']>('');
+
+  // Add state for vesting schedule
+  const [vestingSchedule, setVestingSchedule] = useState<VestingSchedule | null>(null);
 
   useEffect(() => {
     const handleChainChanged: EthereumEventMap['chainChanged'] = (chainId) => {
@@ -295,11 +305,19 @@ const EVMLaunchpadUI: React.FC = () => {
       setLoading(true);
       if (!contract) throw new Error('Contract not initialized');
       
-      const vestingSchedule = await contract.vestingSchedules(investorAddress, tokenAddress);
-      console.log('Vesting Schedule:', vestingSchedule);
-      setError('Vesting schedule fetched successfully!');
+      const schedule = await contract.vestingSchedules(investorAddress, tokenAddress);
+      setVestingSchedule({
+        totalAllocation: schedule.totalAllocation,
+        released: schedule.released,
+        start: schedule.start,
+        duration: schedule.duration,
+      });
+      
+      // Clear any previous errors
+      setError('');
     } catch (err) {
       setError(handleError(err as EVMLaunchpadError));
+      setVestingSchedule(null);
     } finally {
       setLoading(false);
     }
@@ -614,6 +632,50 @@ const EVMLaunchpadUI: React.FC = () => {
                     >
                       Check Vesting Schedule
                     </button>
+
+                    {/* Display Vesting Schedule Information */}
+                    {vestingSchedule && (
+                      <div className="mt-4 space-y-2 p-4 bg-slate-800/50 rounded-lg">
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Total Allocation:</span>
+                          <span>{ethers.utils.formatEther(vestingSchedule.totalAllocation)} Tokens</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Released:</span>
+                          <span>{ethers.utils.formatEther(vestingSchedule.released)} Tokens</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Start Time:</span>
+                          <span>{new Date(vestingSchedule.start.toNumber() * 1000).toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Duration:</span>
+                          <span>{vestingSchedule.duration.toNumber() / (24 * 60 * 60)} Days</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className="text-slate-400">Remaining:</span>
+                          <span>
+                            {ethers.utils.formatEther(
+                              vestingSchedule.totalAllocation.sub(vestingSchedule.released)
+                            )} Tokens
+                          </span>
+                        </div>
+                        {/* Add progress bar */}
+                        <div className="mt-4">
+                          <div className="progress-bar">
+                            <div 
+                              className="progress-bar-fill" 
+                              style={{ 
+                                width: `${vestingSchedule.released
+                                  .mul(100)
+                                  .div(vestingSchedule.totalAllocation)
+                                  .toNumber()}%` 
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
