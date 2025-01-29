@@ -304,18 +304,38 @@ const EVMLaunchpadUI: React.FC = () => {
     try {
       setLoading(true);
       if (!contract) throw new Error('Contract not initialized');
+      if (!tokenAddress) throw new Error('Token address is required');
+      if (!ethers.utils.isAddress(tokenAddress)) throw new Error('Invalid token address');
       
+      // First check if the investor has any allocation
+      const investorInfo = await contract.investors(investorAddress, tokenAddress);
+      if (investorInfo.tokensAllocated.eq(0)) {
+        setError('No investment found for this token');
+        setVestingSchedule(null);
+        return;
+      }
+
+      // Get vesting schedule
       const schedule = await contract.vestingSchedules(investorAddress, tokenAddress);
+      
+      // Validate the schedule
+      if (schedule.totalAllocation.eq(0)) {
+        setError('No vesting schedule found');
+        setVestingSchedule(null);
+        return;
+      }
+
+      // Set the vesting schedule
       setVestingSchedule({
         totalAllocation: schedule.totalAllocation,
         released: schedule.released,
         start: schedule.start,
-        duration: schedule.duration,
+        duration: schedule.duration
       });
       
-      // Clear any previous errors
-      setError('');
+      setError(''); // Clear any previous errors
     } catch (err) {
+      console.error('Vesting Schedule Error:', err);
       setError(handleError(err as EVMLaunchpadError));
       setVestingSchedule(null);
     } finally {
@@ -626,11 +646,17 @@ const EVMLaunchpadUI: React.FC = () => {
                     />
                     <button
                       type="button"
-                      onClick={() => checkVestingSchedule(account, selectedToken)}
-                      disabled={loading}
+                      onClick={() => {
+                        if (!selectedToken) {
+                          setError('Please enter a token address');
+                          return;
+                        }
+                        checkVestingSchedule(account, selectedToken);
+                      }}
+                      disabled={loading || !selectedToken}
                       className="button-primary w-full"
                     >
-                      Check Vesting Schedule
+                      {loading ? 'Checking...' : 'Check Vesting Schedule'}
                     </button>
 
                     {/* Display Vesting Schedule Information */}
@@ -638,19 +664,27 @@ const EVMLaunchpadUI: React.FC = () => {
                       <div className="mt-4 space-y-2 p-4 bg-slate-800/50 rounded-lg">
                         <div className="flex justify-between">
                           <span className="text-slate-400">Total Allocation:</span>
-                          <span>{ethers.utils.formatEther(vestingSchedule.totalAllocation)} Tokens</span>
+                          <span>{ethers.utils.formatEther(vestingSchedule.totalAllocation || '0')} Tokens</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">Released:</span>
-                          <span>{ethers.utils.formatEther(vestingSchedule.released)} Tokens</span>
+                          <span>{ethers.utils.formatEther(vestingSchedule.released || '0')} Tokens</span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">Start Time:</span>
-                          <span>{new Date(vestingSchedule.start.toNumber() * 1000).toLocaleString()}</span>
+                          <span>
+                            {vestingSchedule.start.gt(0)
+                              ? new Date(vestingSchedule.start.toNumber() * 1000).toLocaleString()
+                              : 'Not started'}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">Duration:</span>
-                          <span>{vestingSchedule.duration.toNumber() / (24 * 60 * 60)} Days</span>
+                          <span>
+                            {vestingSchedule.duration.gt(0)
+                              ? `${vestingSchedule.duration.toNumber() / (24 * 60 * 60)} Days`
+                              : 'Not set'}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span className="text-slate-400">Remaining:</span>
@@ -660,20 +694,22 @@ const EVMLaunchpadUI: React.FC = () => {
                             )} Tokens
                           </span>
                         </div>
-                        {/* Add progress bar */}
-                        <div className="mt-4">
-                          <div className="progress-bar">
-                            <div 
-                              className="progress-bar-fill" 
-                              style={{ 
-                                width: `${vestingSchedule.released
-                                  .mul(100)
-                                  .div(vestingSchedule.totalAllocation)
-                                  .toNumber()}%` 
-                              }}
-                            />
+                        {/* Progress bar */}
+                        {vestingSchedule.totalAllocation.gt(0) && (
+                          <div className="mt-4">
+                            <div className="progress-bar">
+                              <div 
+                                className="progress-bar-fill" 
+                                style={{ 
+                                  width: `${vestingSchedule.released
+                                    .mul(100)
+                                    .div(vestingSchedule.totalAllocation)
+                                    .toNumber()}%` 
+                                }}
+                              />
+                            </div>
                           </div>
-                        </div>
+                        )}
                       </div>
                     )}
                   </div>
