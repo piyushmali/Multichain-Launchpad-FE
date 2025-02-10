@@ -1,36 +1,173 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Zero Launchpad UI
 
-## Getting Started
+A decentralized token launchpad platform enabling seamless token launches across multiple blockchain networks. Built with Next.js and modern web technologies, Zero Launchpad provides a user-friendly interface for token creators and investors.
 
-First, run the development server:
+## 🚀 Features
 
+### For Token Creators
+- **Token Registration**
+  - Register new tokens for launch
+  - Set customizable soft and hard caps
+  - Configure token distribution parameters
+  - Manage token transfer settings
+
+### For Sale Management
+- **Flexible Sale Rounds**
+  - Create multiple sale rounds with different parameters
+  - Set token pricing
+  - Define minimum and maximum contribution limits
+  - Schedule start and end times
+  - Control round activation status
+
+### For Investors
+- **Investment Tools**
+  - Participate in active token sales
+  - Track investment history
+  - Monitor vesting schedules
+  - Claim vested tokens when available
+
+### Platform Features
+- **Multi-Chain Support**
+  - Support for multiple EVM-compatible networks
+  - Solana blockchain integration
+  - Seamless network switching
+  - Cross-chain compatibility
+
+- **Wallet Integration**
+  - MetaMask support for EVM chains
+  - Phantom Wallet integration for Solana
+  - Secure transaction handling
+  - Real-time balance updates
+
+## 🛠 Technology Stack
+
+- **Frontend Framework**: Next.js 15.1.6
+- **Smart Contract Integration**: ethers.js 5.7.2
+- **Styling**: TailwindCSS 3.4.1
+- **Language**: TypeScript
+- **State Management**: React Hooks
+- **Blockchain Connectivity**: 
+  - Web3 Provider
+  - Solana Web3.js
+
+## 📦 Installation
+
+1. **Clone the Repository**
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone <repository-url>
+cd evm-launchpad-ui
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. **Install Dependencies**
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. **Start Development Server**
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. **Access the Application**
+- Open [http://localhost:3000](http://localhost:3000)
+- Connect your wallet
+- Start interacting with the platform
 
-## Learn More
+## 🏗 Project Structure
 
-To learn more about Next.js, take a look at the following resources:
+```
+evm-launchpad-ui/
+├── src/
+│   ├── app/
+│   │   ├── page.tsx          # Main application component
+│   │   └── layout.tsx        # Root layout with providers
+│   ├── config/
+│   │   └── chains.ts         # Network configurations
+│   ├── contracts/
+│   │   ├── EVMLaunchpad.json # EVM contract ABI
+│   │   └── ERC20_ABI.json   # Token standard ABI
+│   ├── types/
+│   │   └── ethereum.ts       # TypeScript definitions
+│   └── utils/
+│       └── solana.ts         # Solana utilities
+├── public/                   # Static assets
+└── ...configuration files
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 💡 Usage Guide
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Token Launch Process
+1. **Registration**
+   - Connect wallet
+   - Enter token contract address
+   - Set sale parameters
+   - Configure caps
 
-## Deploy on Vercel
+2. **Sale Round Setup**
+   - Create sale round
+   - Set token price
+   - Define contribution limits
+   - Schedule the round
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+3. **Sale Management**
+   - Activate rounds
+   - Monitor progress
+   - Manage token distribution
+   - Handle vesting schedules
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Investment Process
+1. **Participation**
+   - Browse active sales
+   - Select investment amount
+   - Confirm transaction
+   - Track investment
+
+2. **Token Claims**
+   - View vesting schedule
+   - Check claimable amounts
+   - Execute claims
+   - Monitor token balance
+
+## 🔧 Development
+
+### Available Scripts
+```bash
+# Development server
+npm run dev
+
+# Production build
+npm run build
+
+# Start production server
+npm start
+
+# Run linting
+npm run lint
+```
+
+### Environment Setup
+Create a `.env.local` file:
+```env
+NEXT_PUBLIC_DEFAULT_NETWORK=mainnet
+NEXT_PUBLIC_INFURA_ID=your_infura_id
+NEXT_PUBLIC_SOLANA_NETWORK=devnet
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📝 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🔗 Links
+
+- [Documentation](docs/README.md)
+- [Issue Tracker](issues)
+- [Project Homepage](https://your-project-homepage.com)
+
